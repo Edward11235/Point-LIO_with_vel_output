@@ -300,6 +300,11 @@ void set_posestamp_for_odom_publisher(nav_msgs::Odometry & out)
         out.twist.twist.linear.y = kf_input.x_.vel(1);
         out.twist.twist.linear.z = kf_input.x_.vel(2);
     }
+
+    // Set angular velocity from IMU data
+    out.twist.twist.angular.x = imu_last.angular_velocity.x;
+    out.twist.twist.angular.y = imu_last.angular_velocity.y;
+    out.twist.twist.angular.z = imu_last.angular_velocity.z;
 }
 
 void publish_odometry(const ros::Publisher & pubOdomAftMapped)
