@@ -246,25 +246,33 @@ void set_posestamp(T & out)
 {
     if (!use_imu_as_input)
     {
-        out.position.x = kf_output.x_.pos(0);
-        out.position.y = kf_output.x_.pos(1);
-        out.position.z = kf_output.x_.pos(2);
+        out.pose.pose.position.x = kf_output.x_.pos(0);
+        out.pose.pose.position.y = kf_output.x_.pos(1);
+        out.pose.pose.position.z = kf_output.x_.pos(2);
         Eigen::Quaterniond q(kf_output.x_.rot);
-        out.orientation.x = q.coeffs()[0];
-        out.orientation.y = q.coeffs()[1];
-        out.orientation.z = q.coeffs()[2];
-        out.orientation.w = q.coeffs()[3];
+        out.pose.pose.orientation.x = q.coeffs()[0];
+        out.pose.pose.orientation.y = q.coeffs()[1];
+        out.pose.pose.orientation.z = q.coeffs()[2];
+        out.pose.pose.orientation.w = q.coeffs()[3];
+
+        out.twist.twist.linear.x = kf_output.x_.vel(0);
+        out.twist.twist.linear.y = kf_output.x_.vel(1);
+        out.twist.twist.linear.z = kf_output.x_.vel(2);
     }
     else
     {
-        out.position.x = kf_input.x_.pos(0);
-        out.position.y = kf_input.x_.pos(1);
-        out.position.z = kf_input.x_.pos(2);
+        out.pose.pose.position.x = kf_input.x_.pos(0);
+        out.pose.pose.position.y = kf_input.x_.pos(1);
+        out.pose.pose.position.z = kf_input.x_.pos(2);
         Eigen::Quaterniond q(kf_input.x_.rot);
-        out.orientation.x = q.coeffs()[0];
-        out.orientation.y = q.coeffs()[1];
-        out.orientation.z = q.coeffs()[2];
-        out.orientation.w = q.coeffs()[3];
+        out.pose.pose.orientation.x = q.coeffs()[0];
+        out.pose.pose.orientation.y = q.coeffs()[1];
+        out.pose.pose.orientation.z = q.coeffs()[2];
+        out.pose.pose.orientation.w = q.coeffs()[3];
+
+        out.twist.twist.linear.x = kf_input.x_.vel(0);
+        out.twist.twist.linear.y = kf_input.x_.vel(1);
+        out.twist.twist.linear.z = kf_input.x_.vel(2);
     }
 }
 
@@ -280,7 +288,7 @@ void publish_odometry(const ros::Publisher & pubOdomAftMapped)
     {
         odomAftMapped.header.stamp = ros::Time().fromSec(lidar_end_time);
     }
-    set_posestamp(odomAftMapped.pose.pose);
+    set_posestamp(odomAftMapped);
     
     pubOdomAftMapped.publish(odomAftMapped);
 
@@ -294,9 +302,10 @@ void publish_odometry(const ros::Publisher & pubOdomAftMapped)
     q.setX(odomAftMapped.pose.pose.orientation.x);
     q.setY(odomAftMapped.pose.pose.orientation.y);
     q.setZ(odomAftMapped.pose.pose.orientation.z);
-    transform.setRotation( q );
-    br.sendTransform( tf::StampedTransform( transform, odomAftMapped.header.stamp, "camera_init", "body") );
+    transform.setRotation(q);
+    br.sendTransform(tf::StampedTransform(transform, odomAftMapped.header.stamp, "camera_init", "body"));
 }
+
 
 void publish_path(const ros::Publisher pubPath)
 {
