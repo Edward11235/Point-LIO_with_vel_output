@@ -246,6 +246,32 @@ void set_posestamp(T & out)
 {
     if (!use_imu_as_input)
     {
+        out.position.x = kf_output.x_.pos(0);
+        out.position.y = kf_output.x_.pos(1);
+        out.position.z = kf_output.x_.pos(2);
+        Eigen::Quaterniond q(kf_output.x_.rot);
+        out.orientation.x = q.coeffs()[0];
+        out.orientation.y = q.coeffs()[1];
+        out.orientation.z = q.coeffs()[2];
+        out.orientation.w = q.coeffs()[3];
+    }
+    else
+    {
+        out.position.x = kf_input.x_.pos(0);
+        out.position.y = kf_input.x_.pos(1);
+        out.position.z = kf_input.x_.pos(2);
+        Eigen::Quaterniond q(kf_input.x_.rot);
+        out.orientation.x = q.coeffs()[0];
+        out.orientation.y = q.coeffs()[1];
+        out.orientation.z = q.coeffs()[2];
+        out.orientation.w = q.coeffs()[3];
+    }
+}
+
+void set_posestamp_for_odom_publisher(nav_msgs::Odometry & out)
+{
+    if (!use_imu_as_input)
+    {
         out.pose.pose.position.x = kf_output.x_.pos(0);
         out.pose.pose.position.y = kf_output.x_.pos(1);
         out.pose.pose.position.z = kf_output.x_.pos(2);
@@ -278,6 +304,7 @@ void set_posestamp(T & out)
 
 void publish_odometry(const ros::Publisher & pubOdomAftMapped)
 {
+    nav_msgs::Odometry odomAftMapped;
     odomAftMapped.header.frame_id = "camera_init";
     odomAftMapped.child_frame_id = "body";
     if (publish_odometry_without_downsample)
@@ -288,7 +315,7 @@ void publish_odometry(const ros::Publisher & pubOdomAftMapped)
     {
         odomAftMapped.header.stamp = ros::Time().fromSec(lidar_end_time);
     }
-    set_posestamp(odomAftMapped);
+    set_posestamp_for_odom_publisher(odomAftMapped);
     
     pubOdomAftMapped.publish(odomAftMapped);
 
